@@ -1,0 +1,39 @@
+# Core ML/AI libraries
+torch>=1.9.0
+numpy>=1.21.0
+scipy>=1.7.0
+
+# Computer Vision
+opencv-python>=4.5.0
+mss>=6.1.0
+
+# Audio Processing
+sounddevice>=0.4.0
+pygame>=2.0.0
+
+# GUI Framework
+PyQt5>=5.15.0
+
+# Web Framework (for 3D visualizations)
+flask>=2.0.0
+
+# Utility libraries
+hashlib
+json
+typing
+dataclasses
+threading
+time
+os
+sys
+copy
+math
+collections
+datetime
+webbrowser
+shutil
+
+# Development utilities (optional)
+# pytest>=6.0.0
+# black>=21.0.0
+# flake8>=3.9.0
