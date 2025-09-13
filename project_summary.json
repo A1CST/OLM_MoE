@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "maintained_by": "AI",
+  "generated_at": "2025-09-10T00:00:00Z",
+  "timestamps_required": true,
+  "recent_changes_timestamped": true,
+  "last_updated": "2025-09-12T14:50:00Z",
+  "root": "e:\\Vision_only",
+  "excluded": [
+    "sounds.py"
+  ],
+  "items": [
+    {
+      "path": "D_pipe.py",
+      "type": "file",
+      "summary": "PyTorch D⁰-LSTM with dynamic depth gating; predicts next live latent from packet, live_pred, and frozen hash bits. Provides loss, optimizer, save/load."
+    },
+    {
+      "path": "dual_vae.py",
+      "type": "file",
+      "summary": "FeatureEngine: screen capture → frozen encoder + live VAE, LSH hashing, prediction, logging, and image rendering. Includes SimpleEncoder, SimpleVAE, _HashPredictor, _LiveLatentPredictor. Adds novelty metrics (latent pred error, live hash delta, optional pred-hash wrongness) with EMA smoothing; emits novelty signals; logs novelty fields. D-pipe hash similarity computed on combined latents."
+    },
+    {
+      "path": "engine.py",
+      "type": "file",
+      "summary": "Qt QObject Engine that captures the primary monitor via mss at configurable TPS and emits frames (new_frame)."
+    },
+    {
+      "path": "gui.py",
+      "type": "file",
+      "summary": "Qt application entrypoint creating and showing ui.main_window.App."
+    },
+    {
+      "path": "lsh_system.py",
+      "type": "file",
+      "summary": "Random-hyperplane LSH over latents with chained SHA-256. Manages active/archive code buckets, save/load of hyperplanes and state."
+    },
+    {
+      "path": "p_C_pipe.py",
+      "type": "file",
+      "summary": "PCPipe: Frozen P-LSTM extracts hidden dynamics; trainable compressor LSTM projects to 64-d packet (tanh). Save/load and optimizer helpers."
+    },
+    {
+      "path": "project_summary.py",
+      "type": "file",
+      "summary": "Reusable logger writing state/project_summary.json (created_at, entries[]) for in-app logging; not the root summary."
+    },
+    {
+      "path": "utils.py",
+      "type": "file",
+      "summary": "PyQt image conversion helpers (OpenCV→QPixmap/RGB) and state cleanup (wipe_state) removing checkpoints, logs, and __pycache__."
+    },
+    {
+      "path": "ui",
+      "type": "directory",
+      "children": [
+        {
+          "path": "ui/main_window.py",
+          "type": "file",
+          "summary": "Main Qt window: compact button-based interface with semi-transparent blue theme. Displays replace large panes with popup windows. Features novelty counter, energy/sleep/workers metrics, audio spectrum visualizer. Buttons open: screen capture, hash map, live VAE, D-pipe, worker registry, IILSTM routing windows."
+        },
+        {
+          "path": "ui/heatmap_window.py",
+          "type": "file",
+          "summary": "Standalone heatmap window visualizing hash activity with decay/persistence; configurable via state/heatmap_config.json; renders with custom colormap."
+        },
+        {
+          "path": "ui/display_windows.py",
+          "type": "file",
+          "summary": "Popup display windows: ScreenCaptureWindow, HashMapWindow, LiveVAEWindow, DPipeWindow. Generic DisplayWindow base class with frame update handling for BGR/RGB conversion."
+        },
+        {
+          "path": "ui/worker_windows.py",
+          "type": "file",
+          "summary": "Worker monitoring windows: WorkerRegistryWindow (tracks spawned workers, stats, JSON snapshot) and IILSTMRoutingWindow (executive dashboard with routing decisions, driver values, logits, selected workers)."
+        },
+        {
+          "path": "ui/audio_widget.py",
+          "type": "file",
+          "summary": "AudioVisualizerWidget: Qt custom widget displaying FFT spectrum bars (64 bands, red/black threshold) with thin audio level indicator. Connects to AudioEngine signals for real-time visualization."
+        },
+        {
+          "path": "ui/__pycache__",
+          "type": "directory",
+          "summary": "Python bytecode cache."
+        }
+      ]
+    },
+    {
+      "path": "state",
+      "type": "directory",
+      "children": [
+        { "path": "state/dpipe_lstm.pt", "type": "file", "summary": "Checkpoint for DPipe (PyTorch)." },
+        { "path": "state/frozen_encoder.npz", "type": "file", "summary": "Frozen encoder weights/bias." },
+        { "path": "state/hash_db.npz", "type": "file", "summary": "Hash database: codes and optional 3D coords." },
+        { "path": "state/hash_predictor.json", "type": "file", "summary": "Transitions for hash predictor." },
+        { "path": "state/live_latent_predictor.npz", "type": "file", "summary": "Parameters for latent predictor (A, b)." },
+        { "path": "state/live_vae.npz", "type": "file", "summary": "Live VAE encoder/decoder weights/biases." },
+        { "path": "state/lsh_state.npz", "type": "file", "summary": "LSH hyperplanes and last hash, plus active/archive JSON." },
+        { "path": "state/pc_lstm.pt", "type": "file", "summary": "Checkpoint for PCPipe (PyTorch)." },
+        {
+          "path": "state/logs",
+          "type": "directory",
+          "children": [
+            { "path": "state/logs/log_20250908_142923.jsonl", "type": "file" },
+            { "path": "state/logs/log_20250908_234609.jsonl", "type": "file" },
+            { "path": "state/logs/log_20250908_235045.jsonl", "type": "file" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "__pycache__",
+      "type": "directory",
+      "summary": "Project-level Python bytecode cache."
+    },
+    {
+      "path": "workers",
+      "type": "directory",
+      "children": [
+        { "path": "workers/__init__.py", "type": "file", "summary": "Package exports TemplateDLSTM, PredictorWorker, WorkerRegistry, MouseWorker, KeyWorker." },
+        { "path": "workers/template_dlst.py", "type": "file", "summary": "Generic dynamic-depth LSTM worker template." },
+        { "path": "workers/predictor_worker.py", "type": "file", "summary": "DPipe-compatible predictor worker (residual on live_pred_z)." },
+        { "path": "workers/registry.py", "type": "file", "summary": "WorkerRegistry with stats and snapshots." },
+        { "path": "workers/mouse_worker.py", "type": "file", "summary": "MouseWorker: outputs dx, dy and click/down/up probabilities from packet+control token." },
+        { "path": "workers/key_worker.py", "type": "file", "summary": "KeyWorker: outputs key logits and down/up/noop probabilities from packet+control token." }
+      ]
+    },
+    {
+      "path": "iilstm.py",
+      "type": "file",
+      "summary": "IILSTM executive stub; emits routing logits, k, and control tokens (dry-run)."
+    },
+    {
+      "path": "action_bus.py",
+      "type": "file",
+      "summary": "ActionBus with clamps/cooldowns/energy gate; aggregates at most one mouse and one key per tick."
+    },
+    {
+      "path": "vae_sup.py",
+      "type": "file",
+      "summary": "Support module for sleep/replay/consolidation: deterministic replay builder, cloning, worker supervised imitation, world predictor training with strict acceptance criteria (steps>0, finite MSE, relative+absolute improvement), teacher EMA, and LSH hygiene. Includes robust predictor discovery and fallback handling."
+    }
+  ],
+  "development_approach": {
+    "phase": "build_first_tune_later", 
+    "strategy": "Build complete pipeline with placeholder configs, then calibrate everything after it's running",
+    "current_focus": "Sleep system stabilization and NREM training optimization",
+    "next_major_change": "Full NREM consolidation pipeline with world predictor, worker imitation, and LSH hygiene",
+    "analogy": "Building a car without calibrating anything until complete"
+  },
+   "audio_integration_plan": {
+     "status": "fixed_dimension_mismatches",
+     "device": "Device 105 (48kHz mono)",
+     "chunk_size": 1024,
+     "processing_flow": [
+       "1. Capture realtime audio chunks via sounddevice",
+       "2. Process audio through FROZEN VAE (not live VAE)",
+       "3. Append audio latents to sensory packet",
+       "4. Hash combined vision+audio data via LSH",
+       "5. Update all pipeline components for new latent dimensions"
+     ],
+     "visualizer": "FFT spectrum bars (256 thin bands, black→red at 0.8 threshold; white background; visual-only smoothing)",
+     "impact": "Changes latent sizes throughout entire pipeline - affects P-LSTM, D-LSTM, LSH dimensions",
+     "fixes_applied": [
+       "Fixed dtype mismatch in VAE encoder (S1 vs float32)",
+       "Fixed latent dimension mismatch in LSH system",
+       "Updated PC pipe to use combined latent dimensions",
+       "Updated D-pipe target to use combined latents",
+       "Fixed PC sequence tensor dimensions",
+       "Fixed pending train sample dimensions",
+       "Fixed live prediction for PC window",
+       "Fixed audio engine channel configuration (PaErrorCode -9998)",
+       "Added device fallback and channel auto-detection",
+       "Improved audio callback to handle mono/stereo input",
+       "Added separate visual smoothing for FFT display (keeps raw audio for processing)",
+       "Added novelty signals, EMA smoothing, and logged novelty metrics",
+       "Fixed logged nov_hash_delta_live to use stored per-tick value",
+       "D-pipe hash similarity now uses combined live latent"
+     ]
+   },
+   "sleep_system_fixes": {
+     "status": "fully_functional",
+     "timeline": "2025-09-12",
+     "major_issues_resolved": [
+       {
+         "issue": "Sleep system completely non-functional",
+         "timestamp": "2025-09-12T10:00:00Z", 
+         "problem": "No sleep logs generated, sleep function not triggering, no debug output",
+         "attempts": [
+           "Adjusted energy and pressure thresholds",
+           "Fixed GUI signal connections (diag_info not wired)",
+           "Added comprehensive sleep gate evaluation logging"
+         ],
+         "solution": "Connected missing diag_info signal in main_window.py and added debug logging",
+         "outcome": "Sleep cycles began triggering correctly"
+       },
+       {
+         "issue": "NREM world training returning infinity values",
+         "timestamp": "2025-09-12T11:00:00Z",
+         "problem": "world_mse_baseline: Infinity, world_mse_val: Infinity, steps: 0, promoted: true with no training",
+         "attempts": [
+           "Added predictor worker eager initialization",
+           "Fixed registry binding issues", 
+           "Added comprehensive debugging to _eval_world_mse",
+           "Implemented strict acceptance criteria (_improved helper)",
+           "Added _resolve_world_predictor for robust discovery"
+         ],
+         "root_cause": "PredictorWorker.forward() expects batch_size=1 but _eval_world_mse was feeding batch of 45",
+         "solution": "Added forward_latent() method to PredictorWorker that processes each item individually",
+         "outcome": "Real MSE calculations: baseline=0.008447, val=0.006923, promoted=true with steps>0"
+       },
+       {
+         "issue": "Input dimension mismatches in predictor worker",
+         "timestamp": "2025-09-12T13:00:00Z",
+         "problem": "Expected 224 dimensions, got 193; inconsistent latent dimensions (1D vs 32D)",
+         "attempts": [
+           "Enhanced debugging to show tensor shapes and dimensions",
+           "Identified replay data contains mixed latent dimensions"
+         ],
+         "solution": "Added automatic padding/truncation in forward_latent() to handle dimension mismatches",
+         "outcome": "Robust handling of mixed 1D and 32D latent vectors without crashes"
+       }
+     ],
+     "final_implementation": {
+       "world_predictor_training": {
+         "status": "fully_functional",
+         "epochs": 2,
+         "acceptance_criteria": [
+           "steps > 0 required",
+           "finite MSE values required", 
+           "relative improvement (0.1%) + absolute improvement (1e-6) required",
+           "no promotion without actual training"
+         ],
+         "metrics": "Real MSE calculations, successful model promotions"
+       },
+       "worker_imitation": {
+         "status": "enabled",
+         "toggle": "update_workers_nrem = True",
+         "training_data": "bus-approved actions from logged final_action",
+         "acceptance": "Mouse MAE improves, key accuracy improves"
+       },
+       "lsh_hygiene": {
+         "status": "enabled", 
+         "toggle": "maintain_lsh_nrem = True",
+         "function": "recompute active centroids from replay",
+         "acceptance": "collision_rate_delta <= 0"
+       },
+       "debugging_infrastructure": {
+         "sleep_logs": "Comprehensive debug events logged to sleep_metric entries",
+         "error_handling": "Graceful fallbacks for missing predictors, dimension mismatches",
+         "fake_promotion_prevention": "Strict validation in _nrem_hook prevents promoted:true with steps:0"
+       }
+     },
+     "key_files_modified": [
+       {
+         "file": "dual_vae.py", 
+         "changes": [
+           "Added eager predictor worker initialization",
+           "Fixed registry binding and world_predictor discovery", 
+           "Enhanced _nrem_hook with fake promotion prevention",
+           "Enabled all three NREM training switches",
+           "Added world_epochs = 2 for stability"
+         ]
+       },
+       {
+         "file": "vae_sup.py",
+         "changes": [
+           "Added _is_finite and _improved helpers for strict acceptance",
+           "Updated nrem_update_world with robust error handling",
+           "Added comprehensive debugging to _eval_world_mse",
+           "Fixed _require_world_predictor with better discovery",
+           "Added _resolve_world_predictor method"
+         ]
+       },
+       {
+         "file": "workers/predictor_worker.py", 
+         "changes": [
+           "Added forward_latent() method for batch evaluation",
+           "Implemented individual item processing for LSTM compatibility",
+           "Added automatic dimension padding/truncation for robustness",
+           "Enhanced debugging and error reporting"
+         ]
+       },
+       {
+         "file": "ui/main_window.py",
+         "changes": [
+           "Fixed missing diag_info signal connection",
+           "Added append_info() method for debug display"
+         ]
+       }
+     ]
+   },
+  "recent_changes": [
+    "dual_vae.py: Added novelty_value and novelty_components_text signals; EMA-smoothed novelty from latent MSE + live hash delta (+ optional pred-hash wrongness).",
+    "dual_vae.py: Logging includes novelty, latent_pred_mse, nov_hash_delta_live (fixed), nov_pred_hash_wrong.",
+    "dual_vae.py: D-pipe hash similarity now computed against combined live latent.",
+    "audio_engine.py: Startup fallback across device/channel; visual-only FFT smoothing added.",
+    "Visualizer (excluded file): switched to 256 thin bars, higher red threshold, reduced heights.",
+    "Added WorkerRegistry (workers/registry.py), IILSTM executive (iilstm.py), and ActionBus (action_bus.py).",
+    "dual_vae.py: wired IILSTM dry-run after compressor packet; logs routing (k, selected, workers snapshot) and drivers (novelty/energy/sleep pressure).",
+    "D_pipe.py: replaced with backward-compatible shim delegating to workers.PredictorWorker.",
+    "workers/: added TemplateDLSTM and PredictorWorker; package __init__ exports both.",
+    "dual_vae.py: added live PredictorWorker execution behind kill-switches; lazy init helper binds into WorkerRegistry; logs executed_workers outputs.",
+    "dual_vae.py: predicted frozen hash bits vector switched to {0,1} (from {-1,1}).",
+    "dual_vae.py: logging now includes IILSTM routing logits and k logits for sleep-phase training.",
+    "workers/__init__.py: now also exports WorkerRegistry.",
+    "ui/main_window.py: Major GUI restructure - replaced four 640x480 display panes with compact popup-window buttons; added semi-transparent blue theme with rounded corners.",
+    "ui/main_window.py: Added novelty counter with color coding (green→orange→red), energy/sleep pressure/workers count display; integrated audio spectrum visualizer widget.",
+    "ui/display_windows.py: Created popup windows for screen capture, hash map, live VAE, and D-pipe predictions with proper BGR/RGB frame conversion.",
+    "ui/worker_windows.py: Added WorkerRegistryWindow (worker tracking table, stats, JSON view) and IILSTMRoutingWindow (executive dashboard, routing logits, driver values, selected workers).",
+    "ui/audio_widget.py: Custom Qt widget for audio spectrum visualization - 64 FFT bars with red/black threshold, thin level indicator, connects to AudioEngine signals.",
+    "[2025-09-10T00:00:00Z] workers: added MouseWorker and KeyWorker; action_bus upgraded with clamps/cooldowns/energy gate; dual_vae wired execution behind kill-switches and logs final_action.",
+    "[2025-09-10T07:00:00Z] dual_vae.py: Emergency STOP hotkey (END) added with cooldown; per-tick check disables all workers immediately.",
+    "[2025-09-10T07:00:00Z] dual_vae.py: Default flags updated — worker_exec_enabled=True, worker_use_predictor_output=True.",
+    "[2025-09-10T07:45:00Z] dual_vae.py: Fixed rec usage order; stash ActionBus result locally and merge when building rec; avoids use-before-define.",
+    "[2025-09-10T07:45:00Z] dual_vae.py: Emergency hotkey now checks Windows GetAsyncKeyState during RUN (not in recharge only).",
+    "[2025-09-10T07:45:00Z] sleep_manager.py: Corrected NREM/REM loop step counts to use integer steps.",
+    "[2025-09-10T08:30:00Z] dual_vae.py: Fixed Windows END hotkey panic switch - moved GetAsyncKeyState from _recharge() to _check_emergency_hotkey() for live-tick detection.",
+    "[2025-09-10T08:30:00Z] __pycache__: Cleared Python bytecode cache to ensure updated dual_vae.py is used instead of stale compiled version.",
+    "[2025-09-10T09:30:00Z] vae_sup.py: New support module VaeSup with SleepReport; centralizes sleep helpers (replay builder, safe cloning, worker dataset/extractors, eval/train loops).",
+    "[2025-09-10T09:30:00Z] dual_vae.py: Wired VaeSup via self._sup; _nrem_hook now delegates to support for build_replay/clone/train; removed duplicate helpers from FeatureEngine.",
+    "[2025-09-10T09:30:00Z] NREM Step 1+2: Added sleep_switches and diagnostics; enabled optional supervised worker consolidation using bus-approved final_action targets and recorded control tokens; promotion only on equal-or-better validation.",
+    "[2025-09-10T09:30:00Z] NREM Step 3: Added world-model consolidation — trains predictor clone on live_z→live_z_next MSE, promotes if val improves; optional teacher EMA update; optional LSH maintenance hooks (recompute_centroids/archive_cold_buckets).",
+    "[2025-09-10T09:30:00Z] dual_vae.py: NREM logging now summarizes workers/world/teacher/LSH outcomes and still prints a post-sleep summary.",
+    "[2025-09-12T10:00:00Z] Sleep System Emergency Fix: Fixed completely non-functional sleep system by connecting missing diag_info signal in main_window.py; sleep cycles now trigger correctly with proper debug logging.",
+    "[2025-09-12T10:30:00Z] Sleep Log System: Added separate sleep log files (sleep_YYYYMMDD_HHMMSS.jsonl) with enhanced logging including pressure resets, NREM acceptance metrics, and structured sleep phase reporting.",
+    "[2025-09-12T11:00:00Z] NREM World Training Fix: Resolved infinity MSE values by adding forward_latent() method to PredictorWorker; now handles batch evaluation correctly and returns real MSE calculations (baseline=0.008447, val=0.006923).",
+    "[2025-09-12T11:30:00Z] Strict Acceptance Criteria: Added _is_finite() and _improved() helpers with relative (0.1%) + absolute (1e-6) improvement requirements; prevents fake promotions with steps:0 or non-finite metrics.",
+    "[2025-09-12T12:00:00Z] Predictor Discovery Robustness: Added _resolve_world_predictor() with comprehensive registry scanning, fallback handling, and eager predictor worker initialization during engine startup.",
+    "[2025-09-12T13:00:00Z] Dimension Mismatch Handling: Added automatic padding/truncation in forward_latent() to handle mixed 1D/32D latent vectors from replay data; prevents crashes and maintains training stability.",
+    "[2025-09-12T13:30:00Z] Debug Infrastructure: Added comprehensive sleep log debugging with stage tracking (eval_start, tensors_created, forward_completed, mse_computed, exception) for troubleshooting NREM training issues.",
+    "[2025-09-12T14:30:00Z] Sleep System Stabilization: Enabled all three NREM training components - world predictor (epochs=2), worker imitation (mouse+key), and LSH hygiene (maintain_lsh_nrem=True).",
+    "[2025-09-12T14:50:00Z] NREM Training Success: Achieved fully functional sleep system with real model promotions, finite MSE calculations, strict acceptance criteria, and robust error handling across all components."
+  ],
+  "notes": "Root-level project summary intended to be updated by AIs; exclude sounds.py per instruction. Development approach: build first with wrong configs, tune later."
+}

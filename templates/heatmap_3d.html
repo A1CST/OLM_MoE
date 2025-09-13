@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Hash Heatmap Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+            font-size: 12px;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        #controls button {
+            background: #333;
+            color: white;
+            border: 1px solid #666;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        #controls button:hover {
+            background: #555;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">Loading 3D Hash Heatmap...</div>
+        
+        <div id="info">
+            <div>3D Hash Heatmap Viewer</div>
+            <div>Clusters: <span id="cluster-count">0</span></div>
+            <div>Activity Max: <span id="activity-max">0.000</span></div>
+            <div>Persist Max: <span id="persist-max">0.000</span></div>
+            <div>Last Update: <span id="last-update">Never</span></div>
+        </div>
+        
+        <div id="controls">
+            <button onclick="resetCamera()">Reset Camera</button>
+            <button onclick="toggleAutoRotate()">Auto Rotate</button>
+            <button onclick="toggleWireframe()">Wireframe</button>
+            <button onclick="toggleClusters()">Show Clusters</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // Global variables
+        let scene, camera, renderer, controls;
+        let heatmapMesh, clusterGroup;
+        let autoRotate = false;
+        let showWireframe = false;
+        let showClusters = true;
+        let updateInterval;
+        
+        // Initialize the 3D scene
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(2, 2, 2);
+            
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('container').appendChild(renderer.domElement);
+            
+            // Add controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = autoRotate;
+            controls.autoRotateSpeed = 0.5;
+            
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Create initial heatmap mesh
+            createHeatmapMesh();
+            
+            // Create cluster group
+            clusterGroup = new THREE.Group();
+            scene.add(clusterGroup);
+            
+            // Start update loop
+            animate();
+            
+            // Load initial data
+            loadHeatmapData();
+            
+            // Set up periodic updates
+            updateInterval = setInterval(loadHeatmapData, 1000); // Update every second
+        }
+        
+        function createHeatmapMesh() {
+            // Create a plane geometry for the heatmap
+            const geometry = new THREE.PlaneGeometry(2, 2, 255, 255);
+            
+            // Create material with custom shader for heatmap visualization
+            const material = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0.0 },
+                    activityTexture: { value: null },
+                    persistTexture: { value: null }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    uniform sampler2D activityTexture;
+                    uniform sampler2D persistTexture;
+                    varying vec2 vUv;
+                    
+                    void main() {
+                        vec4 activity = texture2D(activityTexture, vUv);
+                        vec4 persist = texture2D(persistTexture, vUv);
+                        
+                        // Create heatmap colors
+                        float intensity = activity.r + persist.r * 0.3;
+                        
+                        vec3 color;
+                        if (intensity > 0.8) {
+                            color = vec3(1.0, 0.0, 0.0); // Red
+                        } else if (intensity > 0.6) {
+                            color = vec3(1.0, 0.5, 0.0); // Orange
+                        } else if (intensity > 0.4) {
+                            color = vec3(1.0, 1.0, 0.0); // Yellow
+                        } else if (intensity > 0.2) {
+                            color = vec3(0.0, 1.0, 1.0); // Cyan
+                        } else if (intensity > 0.05) {
+                            color = vec3(0.0, 0.0, 1.0); // Blue
+                        } else {
+                            color = vec3(0.1, 0.1, 0.1); // Dark
+                        }
+                        
+                        gl_FragColor = vec4(color, 0.8);
+                    }
+                `,
+                transparent: true,
+                wireframe: showWireframe
+            });
+            
+            heatmapMesh = new THREE.Mesh(geometry, material);
+            heatmapMesh.rotation.x = -Math.PI / 2; // Lay flat
+            scene.add(heatmapMesh);
+        }
+        
+        function loadHeatmapData() {
+            fetch('/api/heatmap_data')
+                .then(response => response.json())
+                .then(data => {
+                    updateHeatmap(data);
+                    updateClusters(data.clusters);
+                    updateInfo(data);
+                })
+                .catch(error => {
+                    console.error('Error loading heatmap data:', error);
+                });
+        }
+        
+        function updateHeatmap(data) {
+            if (!heatmapMesh) return;
+            
+            // Create textures from the data
+            const activityTexture = createTextureFromData(data.activity, data.grid_size);
+            const persistTexture = createTextureFromData(data.persist, data.grid_size);
+            
+            heatmapMesh.material.uniforms.activityTexture.value = activityTexture;
+            heatmapMesh.material.uniforms.persistTexture.value = persistTexture;
+            heatmapMesh.material.uniforms.time.value = Date.now() * 0.001;
+        }
+        
+        function createTextureFromData(data, size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(size, size);
+            
+            for (let i = 0; i < size * size; i++) {
+                const value = data[Math.floor(i / size)][i % size];
+                const intensity = Math.floor(value * 255);
+                
+                imageData.data[i * 4] = intensity;     // R
+                imageData.data[i * 4 + 1] = intensity; // G
+                imageData.data[i * 4 + 2] = intensity; // B
+                imageData.data[i * 4 + 3] = 255;       // A
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+        
+        function updateClusters(clusters) {
+            // Clear existing clusters
+            clusterGroup.clear();
+            
+            if (!showClusters) return;
+            
+            clusters.forEach(cluster => {
+                const geometry = new THREE.SphereGeometry(cluster.size, 16, 16);
+                const material = new THREE.MeshPhongMaterial({
+                    color: new THREE.Color().setHSL(cluster.intensity * 0.7, 1.0, 0.5),
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(
+                    (cluster.x - 0.5) * 2,
+                    cluster.z * 0.5,
+                    (cluster.y - 0.5) * 2
+                );
+                
+                clusterGroup.add(sphere);
+            });
+        }
+        
+        function updateInfo(data) {
+            document.getElementById('cluster-count').textContent = data.clusters.length;
+            document.getElementById('activity-max').textContent = Math.max(...data.activity.flat()).toFixed(3);
+            document.getElementById('persist-max').textContent = Math.max(...data.persist.flat()).toFixed(3);
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // Control functions
+        function resetCamera() {
+            camera.position.set(2, 2, 2);
+            controls.reset();
+        }
+        
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+            controls.autoRotate = autoRotate;
+        }
+        
+        function toggleWireframe() {
+            showWireframe = !showWireframe;
+            if (heatmapMesh) {
+                heatmapMesh.material.wireframe = showWireframe;
+            }
+        }
+        
+        function toggleClusters() {
+            showClusters = !showClusters;
+            clusterGroup.visible = showClusters;
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
+
+
